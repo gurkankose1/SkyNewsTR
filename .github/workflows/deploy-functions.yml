@@ -1,0 +1,35 @@
+name: Deploy SkyNews Functions
+
+on:
+  push:
+    branches:
+      - main # Veya hangi branch'i kullanıyorsanız (master, vb.)
+    paths:
+      - 'functions/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Install Function Dependencies
+        run: cd functions && npm install
+
+      - name: Deploy to Firebase
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }} # This is provided by the action
+          FIREBASE_PROJECT_ID: AIzaSyAaVJLw4VXl3wR9Tt2SzsJwciJICH6j_uI # BURAYI DEĞİŞTİRİN
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }} # Burayı Adım 5'te ekleyeceğiz
+        run: |
+          firebase functions:config:set gemini.key="${GEMINI_API_KEY}"
+          firebase deploy --only functions --project ${FIREBASE_PROJECT_ID} --token ${{ secrets.FIREBASE_TOKEN }} --non-interactive
